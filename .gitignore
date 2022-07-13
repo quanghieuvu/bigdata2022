@@ -139,6 +139,5 @@ input/*
 *.xlsx
 *.pyc
 *.so
-*.cpp
 /src/log/*
 src/note.txt

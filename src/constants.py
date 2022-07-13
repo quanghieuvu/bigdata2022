@@ -28,10 +28,12 @@ import json
 import glob
 from utils import util_os
 
-PROJECT_PATH = "/home/tnguyenhu2/alan_project/bigdata2022/"
+CWF = Path(__file__)
+PROJECT_PATH = str(CWF.parent.parent) + '/'
+# PROJECT_PATH = "/home/tnguyenhu2/alan_project/bigdata2022/"
 
 
-DATA_PATH = PROJECT_PATH + 'data/'
+DATA_PATH = PROJECT_PATH + 'input/'
 TRAIN_VAL_PATH = util_os.gen_dir(PROJECT_PATH + 'train_val/')
 CKPT_PATH = util_os.gen_dir(PROJECT_PATH + 'ckpt/')
 RESULT_PATH = util_os.gen_dir(PROJECT_PATH + 'result/')
@@ -47,5 +49,5 @@ IMAGENET_STD=[0.229, 0.224, 0.225]
 
 
 #CUDA ENVIRONMENT
-os.environ["CUDA_VISIBLE_DEVICES"] = '1' 
+os.environ["CUDA_VISIBLE_DEVICES"] = '0' 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')

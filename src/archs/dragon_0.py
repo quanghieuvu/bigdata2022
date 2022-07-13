@@ -23,7 +23,8 @@ def deconv_layer(depth_in, depth_out, output_size=-1):
                     nn.ReLU(),
                     nn.Upsample(size=output_size, mode='bilinear'),
             )
-
+        
+#FCN-style encoder-deconder network
 class Arch(nn.Module):
     def __init__(self, output_depth=3):
         super(Arch, self).__init__()
