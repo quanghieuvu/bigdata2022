@@ -5,20 +5,33 @@ conda env update --file environment.yml --prune
 conda activate dragonenv
 ```
 
+## Source-code structure
++ archs: architecture designs
++ evals: most of evaluation metrics
++ loaders: data preprocessing
++ models: implementation of model functions like training, testing, visualization
++ runs: calling functions written in archs, loaders, models
++ utils: supportive functions
+
+## Concepts
++ task_name: includes three tasks S1, S2, S3
++ arch_id: an architecture design can see various versions with minor changes. Each design is labelled with an "arch_id".
++ model_id: for each design, a model can be trained with different hyper-parameters such as learning rate, weights of loss components, leading to slightly different results. Each model is encoded by a "model_id".
+
 ## Basic operations
 The following commands should be operated under the <b>src/ckpt</b> directory.
 
 Generate training and validation files:
 ```bash
-python -W ignore main.py helper generate_train_val 0 0 S1
+python -W ignore main.py helper generate_train_val 0 0 "task_name"
 ```
 Train the a dragon model:
 ```bash
-python -W ignore main.py dragon train "arch_id" "model_id" S2
+python -W ignore main.py dragon train "arch_id" "model_id" "task_name"
 ```
 Save decoded maps:
 ```bash
-python -W ignore main.py dragon save_decoded_map "arch_id" "model_id" S2
+python -W ignore main.py dragon save_decoded_map "arch_id" "model_id" "task_name"
 ```
 
 
