@@ -18,3 +18,12 @@ Save decoded maps:
 ```bash
 python -W ignore main.py dragon save_decoded_map "arch_id" "model_id" S2
 ```
+
+
+## Related work
+1. Arnold's cat map ([url](https://en.wikipedia.org/wiki/Arnold's_cat_map))
+1. Chaos-based image encryption algorithm ([url](https://www.sciencedirect.com/science/article/pii/S0375960105011904?via%3Dihub))
+1. Dynamics analysis of chaotic maps: From perspective on parameter estimation by meta-heuristic algorithm ([url](https://iopscience.iop.org/article/10.1088/1674-1056/ab695c))
+1. A Deep Learning Based Attack for The Chaos-based Image Encryption ([url](https://arxiv.org/pdf/1907.12245v1.pdf))
+1. Image similarity using Triplet Loss ([url](https://towardsdatascience.com/image-similarity-using-triplet-loss-3744c0f67973))
+1. Triplet Loss ([url](https://towardsdatascience.com/triplet-loss-advanced-intro-49a07b7d8905))
