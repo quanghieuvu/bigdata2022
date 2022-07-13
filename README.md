@@ -14,7 +14,7 @@ conda activate dragonenv
 + utils: supportive functions
 
 ## Concepts
-+ task_name: includes three tasks S1, S2, S3
++ task_name: includes three tasks S1, S2, S3.
 + arch_id: an architecture design can see various versions with minor changes. Each design is labelled with an "arch_id".
 + model_id: for each design, a model can be trained with different hyper-parameters such as learning rate, weights of loss components, leading to slightly different results. Each model is encoded by a "model_id".
 
@@ -25,13 +25,15 @@ Generate training and validation files:
 ```bash
 python -W ignore main.py helper generate_train_val 0 0 "task_name"
 ```
-Train the a dragon model:
+Train the a dragon model (format and example):
 ```bash
 python -W ignore main.py dragon train "arch_id" "model_id" "task_name"
+python -W ignore main.py dragon train 0 0 S2
 ```
-Save decoded maps:
+Save decoded maps (format and example):
 ```bash
 python -W ignore main.py dragon save_decoded_map "arch_id" "model_id" "task_name"
+python -W ignore main.py dragon save_decoded_map 0 0 S2
 ```
 
 
