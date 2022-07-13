@@ -19,7 +19,7 @@ conda activate dragonenv
 + model_id: for each design, a model can be trained with different hyper-parameters such as learning rate, weights of loss components, leading to slightly different results. Each model is encoded by a "model_id".
 
 ## Basic operations
-The following commands should be operated under the <b>src/ckpt</b> directory.
+The following commands should be operated under the <b>src</b> directory.
 
 Generate training and validation files:
 ```bash
@@ -46,4 +46,4 @@ python -W ignore main.py dragon save_decoded_map 0 0 S2
 1. Triplet Loss ([url](https://towardsdatascience.com/triplet-loss-advanced-intro-49a07b7d8905))
 
 ## Others
-+ The trained weights can be downloaded from [here](https://drive.google.com/drive/folders/1eONm0PQjFpRDiNRditIWv45L5BxTR2KO?usp=sharing) and should be put under the <b>bigdata2022/ckpt</b> directory.
++ The trained weights can be downloaded from [here](https://drive.google.com/drive/folders/1eONm0PQjFpRDiNRditIWv45L5BxTR2KO?usp=sharing) and should be put under the <b>ckpt</b> directory.
