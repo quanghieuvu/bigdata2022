@@ -1,3 +1,11 @@
+## Installation
+Setup and activate anaconda environment:
+```bash
+conda env update --file environment.yml --prune
+conda activate dragonenv
+```
+
+## Basic operations
 Generate training and validation files:
 ```bash
 python -W ignore main.py helper generate_train_val 0 0 S1

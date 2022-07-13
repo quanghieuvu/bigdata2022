@@ -1,4 +1,4 @@
-name: alanenv
+name: dragonenv
 channels:
   - defaults
 dependencies:
