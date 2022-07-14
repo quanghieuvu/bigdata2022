@@ -25,6 +25,10 @@ Generate training and validation files:
 ```bash
 python -W ignore main.py helper generate_train_val 0 0 "task_name"
 ```
+Generate shadow training and validation files:
+```bash
+python -W ignore main.py helper generate_train_val_shadow 0 0 "task_name"
+```
 Train the a dragon model (format and example):
 ```bash
 python -W ignore main.py dragon train "arch_id" "model_id" "task_name"
@@ -44,6 +48,8 @@ python -W ignore main.py dragon save_decoded_map 0 0 S2
 1. A Deep Learning Based Attack for The Chaos-based Image Encryption ([url](https://arxiv.org/pdf/1907.12245v1.pdf))
 1. Image similarity using Triplet Loss ([url](https://towardsdatascience.com/image-similarity-using-triplet-loss-3744c0f67973))
 1. Triplet Loss ([url](https://towardsdatascience.com/triplet-loss-advanced-intro-49a07b7d8905))
+1. SigNet: Convolutional Siamese Network for Writer Independent Offline Signature Verification ([url](https://arxiv.org/pdf/1707.02131.pdf))
+1. Membership Inference Attacks Against Machine Learning Models ([url](https://www.cs.cornell.edu/~shmat/shmat_oak17.pdf))
 
 ## Others
 + The trained weights can be downloaded from [here](https://drive.google.com/drive/folders/1eONm0PQjFpRDiNRditIWv45L5BxTR2KO?usp=sharing) and should be put under the <b>ckpt</b> directory.

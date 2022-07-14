@@ -49,5 +49,5 @@ IMAGENET_STD=[0.229, 0.224, 0.225]
 
 
 #CUDA ENVIRONMENT
-os.environ["CUDA_VISIBLE_DEVICES"] = '0' 
+os.environ["CUDA_VISIBLE_DEVICES"] = '1' 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')

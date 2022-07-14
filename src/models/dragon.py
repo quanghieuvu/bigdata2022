@@ -75,7 +75,7 @@ class Model():
 
 		pred_image = self.model(encode)	
 		self.loss = self.criterion(pred_image, image)
-		self.epoch_loss_ += self.loss.item()             
+		self.epoch_loss_ += self.loss.item() #* loader.batch_size            
 		
 		self.backprop(loader, self.loss)
 
@@ -85,7 +85,7 @@ class Model():
 		self.current_time = time.time()
 
 	def summary_epoch(self, loader):
-		self.log.info("{}: loss={:.6f}".format(loader.name, self.epoch_loss))
+		self.log.info("{}: loss={:.6f}".format(loader.name, self.epoch_loss_))
 
 	def save_checkpoint(self, epoch_id):
 		if self.min_epoch_loss > self.epoch_loss:
