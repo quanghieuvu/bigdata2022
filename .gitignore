@@ -131,3 +131,14 @@ dmypy.json
 # data folders
 download/*
 input/*
+
+
+#Nguyen Huu Thanh
+# ===================================================
+*.ini
+*.ckpt
+*.xlsx
+*.pyc
+*.so
+/src/log/*
+src/note.txt
