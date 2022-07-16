@@ -31,7 +31,6 @@ from utils import util_os
 
 CWF = Path(__file__)
 PROJECT_PATH = str(CWF.parent.parent) + '/'
-# PROJECT_PATH = "/home/tnguyenhu2/alan_project/bigdata2022/"
 
 
 DATA_PATH = PROJECT_PATH + 'input/'
@@ -41,7 +40,6 @@ RESULT_PATH = util_os.gen_dir(PROJECT_PATH + 'result')
 LOG_PATH = util_os.gen_dir(PROJECT_PATH + 'log')
 
 INPUT_SIZE = 256 
-# OUTPUT_SIZE = 256
 
 IMAGENET_MEAN=[0.485, 0.456, 0.406]
 IMAGENET_STD=[0.229, 0.224, 0.225]

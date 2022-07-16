@@ -24,8 +24,6 @@ def train(arch_id, model_id, task_name):
 					is_training=False)
 	
 	model = model_.Model(arch.Arch(output_depth), arch.Arch(output_depth))
-	# ckpt_path = CKPT_PATH + "BUFFALO_v{}_{}_train_{}.ckpt".format(arch_id, task_name, model_id)
-	# model.load_ckpt(ckpt_path)
 	model.train(train_loader, val_loader, model_id)
 
 

@@ -90,12 +90,9 @@ class Model():
 		image = batch_data[2].to(device)
 		label = batch_data[4].to(device) if self.output_depth == 1 else image
 		if image.size(0) != loader.batch_size: return
-		# print ('label', label.size())
 
 		pred_image, feature_image = self.model_image(image)
 		pred_encode, feature_encode = self.model_encode(encode)
-		# print ('pred_image', pred_image.size())
-		# print ('pred_encode', pred_encode.size())
 
 		self.image_decryption_loss = self.criterion(pred_image, label)
 		self.encode_decryption_loss = self.criterion(pred_encode, label)
@@ -105,20 +102,14 @@ class Model():
 		feature_encode_flip = torch.flip(feature_encode, [0])
 		margin = 1.
 		D_1a = torch.mean(self.triplet_criterion(feature_image, feature_encode), 1)
-		# print ('D_1a', D_1a)
 		D_0a = torch.mean(self.triplet_criterion(feature_image, feature_encode_flip), 1)
-		# print ('D_0a', D_0a)
 		D_0b = torch.mean(self.triplet_criterion(feature_image_flip, feature_encode), 1)
-		# print ('D_0b', D_0b)
-		# D_0a = self.criterion(feature_image, feature_encode_flip)
-		# D_0b = self.criterion(feature_image_flip, feature_encode)
 
 		relu = torch.nn.ReLU()
 		loss_similarity = torch.mean(D_1a)
 		loss_difference = torch.mean(relu(margin - D_0a) + relu(margin - D_0b)) / 2
 
 		triplet_loss = torch.mean(relu(margin + D_1a - D_0a) + relu(margin + D_1a - D_0b)) / 2
-		# print ('triplet_loss', triplet_loss.size())
 		if self.model_id % 2 == 0:
 			self.loss = self.image_decryption_loss + self.encode_decryption_loss + loss_similarity + loss_difference
 		else:
@@ -153,7 +144,6 @@ class Model():
 		if epoch_id % self.lr_step == 0:
 			torch.save(self.model_image.state_dict(), self.last_model_path.replace('.ckpt', '_image.ckpt'))
 			torch.save(self.model_encode.state_dict(), self.last_model_path.replace('.ckpt', '_encode.ckpt'))
-			# torch.save(self.model.state_dict(), self.last_model_path)
 
 	def refresh_eval_and_loss(self):
 		self.epoch_loss_ = 0
@@ -209,7 +199,6 @@ class Model():
 			if encode.size(0) != loader.batch_size: return
 
 			pred_image = self.model(encode)
-			# print ('pred_image', pred_image.size())
 			np_pred_image = pred_image.data.cpu().numpy() * 255.0
 			np_pred_image[np_pred_image > 255] = 255
 			np_pred_image[np_pred_image < 0] = 0
@@ -224,7 +213,6 @@ class Model():
 				if self.output_depth == 3:
 					pil_pred_image = Image.fromarray(np_pred_image[batch_id].astype('uint8'), 'RGB')
 				else:
-					# print ('np_pred_image[batch_id]', np_pred_image[batch_id].shape)
 					np_pred_image_ = np.squeeze(np_pred_image[batch_id], axis=2)
 					pil_pred_image = Image.fromarray(np_pred_image_.astype('uint8'), 'L').convert('RGB')
 
@@ -234,9 +222,6 @@ class Model():
 	def eval_discrimination(self, val_file):
 		self.model_image.eval()
 		self.model_encode.eval()
-		# val_name = util_os.get_file_name(val_file)
-		# result_dir = util_os.gen_dir("{}{}_on_{}".format(RESULT_PATH, model_name, val_name), True)
-		# print ("results are found at " + result_dir)
 
 		val_samples = list(open(TRAIN_VAL_PATH + val_file, 'r'))
 		true_diff, false_diff = [], []
@@ -245,22 +230,17 @@ class Model():
 			similarity = int(similarity)
 			image = util.preprocessing_image("{}{}".format(DATA_PATH, image_path), INPUT_SIZE).to(device)
 			encode = util.preprocessing_image("{}{}".format(DATA_PATH, encode_path)).to(device)
-			# print ('image', image.size())
-			# print ('encode', encode.size())
 
 			pred_image, feature_image = self.model_image(image)
 			pred_encode, feature_encode = self.model_encode(encode)
 			diff = self.criterion(feature_image, feature_encode).item()
-			# print ("\n{}".format(image_path))
-			# print ("{}, {:.6f}".format(similarity, diff))
 			if similarity == 1: 
 				true_diff.append(diff)
 			else:
 				false_diff.append(diff)
 		true_diff.sort(reverse=True)
 		false_diff.sort()
-		# print ('true: ', true_diff)
-		# print ('false: ', false_diff)
+		
 		join_diff = true_diff + false_diff
 		np_true_diff = np.array(true_diff)
 		np_false_diff = np.array(false_diff)

@@ -25,19 +25,15 @@ Generate training and validation files:
 ```bash
 python -W ignore main.py helper generate_train_val 0 0 "task_name"
 ```
-Generate shadow training and validation files:
+Train the a buffalo model (format and example):
 ```bash
-python -W ignore main.py helper generate_train_val_shadow 0 0 "task_name"
+python -W ignore main.py buffalo train "arch_id" "model_id" "task_name"
+python -W ignore main.py buffalo train 0 0 S2
 ```
-Train the a dragon model (format and example):
+Evaluate the discrimination performance on the validation set:
 ```bash
-python -W ignore main.py dragon train "arch_id" "model_id" "task_name"
-python -W ignore main.py dragon train 0 0 S2
-```
-Save decoded maps (format and example) to visualize decoded map with input and encode map:
-```bash
-python -W ignore main.py dragon save_decoded_map "arch_id" "model_id" "task_name"
-python -W ignore main.py dragon save_decoded_map 0 0 S2
+python -W ignore main.py buffalo eval_discrimination "arch_id" "model_id" "task_name"
+python -W ignore main.py buffalo eval_discrimination 0 0 S2
 ```
 
 

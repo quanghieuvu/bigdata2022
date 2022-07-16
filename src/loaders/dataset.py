@@ -92,12 +92,9 @@ class AddGaussianNoise(object):
 
 class ToTensor(object):
 	def __call__(self, sample):
-		# print ('gray', sample['image_grayscale'].shape)
 		np_gray = np.expand_dims(sample['image_grayscale'], axis=2)
-		# print ('np_gray', np_gray.shape)
 		sample['image_grayscale'] = np_gray
 		for key in ['image', 'encode', 'image_grayscale']:
-			# print ('key', key)
 			image = sample[key].transpose((2, 0, 1))
 			sample[key] = torch.from_numpy(image).float()
 		return sample
