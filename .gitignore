@@ -142,3 +142,4 @@ input/*
 *.so
 src/log/*
 src/note.txt
+*~*.pptx
