@@ -3,7 +3,7 @@ from constants import *
 
 
 
-class FoodDataset(Dataset):
+class Dataset(Dataset):
 	def __init__(self, ann_file, transform=None):
 		self.ann_file = TRAIN_VAL_PATH + ann_file
 		self.transform = transform
@@ -30,7 +30,8 @@ class FoodDataset(Dataset):
 		
 		content['image'] = Image.open("{}{}".format(DATA_PATH, image_path))
 		content['encode'] = Image.open("{}{}".format(DATA_PATH, encode_path))
-		content['image_grayscale'] = content['image'].convert('L')
+		content['image_grayscale'] = content['image'].convert('L') #.convert('RGB')
+
 		return content
 
 
@@ -41,8 +42,10 @@ class Rescale(object):
 
 	def __call__(self, sample):
 		image = sample['image']
+		image_L = sample['image_grayscale']
 		assert isinstance(image, Image.Image)
 		sample['image'] = image.resize(self.output_size, Image.ANTIALIAS)
+		sample['image_grayscale'] = image_L.resize(self.output_size, Image.ANTIALIAS)
 		return sample
 
 class Rotate(object):
@@ -57,8 +60,9 @@ class Rotate(object):
 			shuffle(rotate_degrees)
 			rotate_degree = rotate_degrees[0]
 			if rotate_degree > 0:
-				for key in ['image', 'encode', 'image_grayscale']:				
-					sample[key] = image.transpose(
+				for key in ['image', 'encode', 'image_grayscale']:
+					key_ = sample[key]			
+					sample[key] = key_.transpose(
 						Image.__getattribute__("ROTATE_{}".format(rotate_degree)))
 
 		return sample
@@ -68,7 +72,8 @@ class ToNumpy(object):
 
 	def __call__(self, sample):
 		for key in ['image', 'encode', 'image_grayscale']:
-			sample[key] = np.array(sample['image'])
+			sample[key] = np.array(sample[key])
+			# print (key, sample[key].shape)
 		return sample
 
 class AddGaussianNoise(object):
@@ -87,7 +92,12 @@ class AddGaussianNoise(object):
 
 class ToTensor(object):
 	def __call__(self, sample):
+		# print ('gray', sample['image_grayscale'].shape)
+		np_gray = np.expand_dims(sample['image_grayscale'], axis=2)
+		# print ('np_gray', np_gray.shape)
+		sample['image_grayscale'] = np_gray
 		for key in ['image', 'encode', 'image_grayscale']:
+			# print ('key', key)
 			image = sample[key].transpose((2, 0, 1))
 			sample[key] = torch.from_numpy(image).float()
 		return sample

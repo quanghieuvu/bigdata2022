@@ -1,5 +1,6 @@
 from constants import *
 from random import shuffle
+from utils import util
 
 def write_to_file(samples, file_path):
 	output = open(file_path, 'w')
@@ -32,11 +33,28 @@ def generate_train_val_shadow(arch_id, model_id, task_name, num_shadows=4):
 		finish_val = min(len(train_samples), int((shadow_id + 1) * len(train_samples) / num_shadows))
 		shadow_val_samples = train_samples[begin_val: finish_val]
 		shadow_train_samples = [s for s in train_samples if s not in shadow_val_samples]
-		write_to_file(shadow_val_samples, '{}{}_shadow{}_val.txt'.format(TRAIN_VAL_PATH, task_name, shadow_id))
-		write_to_file(shadow_train_samples, '{}{}_shadow{}_train.txt'.format(TRAIN_VAL_PATH, task_name, shadow_id))
+		write_to_file(shadow_val_samples, '{}{}_shadow{}_val.txt'.format(TRAIN_VAL_PATH, task_name, shadow_id+1))
+		write_to_file(shadow_train_samples, '{}{}_shadow{}_train.txt'.format(TRAIN_VAL_PATH, task_name, shadow_id+1))
 
+def generate_discrimination_val(arch_id, model_id, task_name):
+	val_path = '{}{}_val.txt'.format(TRAIN_VAL_PATH, task_name)
+	image_paths, encode_paths = [], [] 
+	val_samples = list(open(val_path, 'r'))
+	for val_sample in val_samples:
+		[image_path, encode_path] = val_sample.strip().split(',')
+		image_paths.append(image_path)
+		encode_paths.append(encode_path)
 
+	val_file = open("{}{}_val_discrimination.txt".format(TRAIN_VAL_PATH, task_name), 'w')
+	N = len(val_samples)
+	for sample_id in range(N):
+		val_file.write("{},{},{}\n".format(1, image_paths[sample_id], encode_paths[sample_id]))
 
+		random_id = random.randint(sample_id + 1, sample_id + N - 1) % N
+		val_file.write("{},{},{}\n".format(0, image_paths[sample_id], encode_paths[random_id]))
 
+		random_id = random.randint(sample_id + 1, sample_id + N - 1) % N
+		val_file.write("{},{},{}\n".format(0, image_paths[random_id], encode_paths[sample_id]))
+	val_file.close()
 
 

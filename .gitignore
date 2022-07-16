@@ -140,5 +140,5 @@ input/*
 *.xlsx
 *.pyc
 *.so
-/src/log/*
+src/log/*
 src/note.txt

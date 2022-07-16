@@ -20,6 +20,7 @@ from shutil import copyfile
 import sys
 import platform
 from random import shuffle
+import random
 from tqdm import trange, tqdm
 import colorsys
 from pathlib import Path
@@ -34,13 +35,13 @@ PROJECT_PATH = str(CWF.parent.parent) + '/'
 
 
 DATA_PATH = PROJECT_PATH + 'input/'
-TRAIN_VAL_PATH = util_os.gen_dir(PROJECT_PATH + 'train_val/')
-CKPT_PATH = util_os.gen_dir(PROJECT_PATH + 'ckpt/')
-RESULT_PATH = util_os.gen_dir(PROJECT_PATH + 'result/')
-LOG_PATH = util_os.gen_dir(PROJECT_PATH + 'log/')
+TRAIN_VAL_PATH = util_os.gen_dir(PROJECT_PATH + 'train_val')
+CKPT_PATH = util_os.gen_dir(PROJECT_PATH + 'ckpt')
+RESULT_PATH = util_os.gen_dir(PROJECT_PATH + 'result')
+LOG_PATH = util_os.gen_dir(PROJECT_PATH + 'log')
 
-INPUT_SIZE = 512 
-OUTPUT_SIZE = 512
+INPUT_SIZE = 256 
+# OUTPUT_SIZE = 256
 
 IMAGENET_MEAN=[0.485, 0.456, 0.406]
 IMAGENET_STD=[0.229, 0.224, 0.225]
@@ -49,5 +50,5 @@ IMAGENET_STD=[0.229, 0.224, 0.225]
 
 
 #CUDA ENVIRONMENT
-os.environ["CUDA_VISIBLE_DEVICES"] = '1' 
+os.environ["CUDA_VISIBLE_DEVICES"] = '3' 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
