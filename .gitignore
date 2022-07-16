@@ -131,7 +131,7 @@ dmypy.json
 # data folders
 download/*
 input/*
-
+output/*
 
 #Nguyen Huu Thanh
 # ===================================================
