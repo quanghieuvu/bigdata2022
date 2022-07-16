@@ -132,6 +132,7 @@ dmypy.json
 download/*
 input/*
 output/*
+.idea/*
 
 #Nguyen Huu Thanh
 # ===================================================
