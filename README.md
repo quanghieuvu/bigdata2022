@@ -31,9 +31,14 @@ python -W ignore main.py buffalo train "arch_id" "model_id" "task_name"
 python -W ignore main.py buffalo train 0 0 S2
 ```
 Evaluate the discrimination performance on the validation set:
++ model_id = 0: decode = RGB, discrimination loss = contrast
++ model_id = 10: decode = grayscale, discrimination loss = contrast
++ model_id = 11: decode = grayscale, discrimination loss = triplet
 ```bash
 python -W ignore main.py buffalo eval_discrimination "arch_id" "model_id" "task_name"
 python -W ignore main.py buffalo eval_discrimination 0 0 S2
+python -W ignore main.py buffalo eval_discrimination 0 10 S2
+python -W ignore main.py buffalo eval_discrimination 0 11 S2
 ```
 
 

@@ -186,8 +186,7 @@ class Model():
 			param_group['lr'] = self.lr
 
 	def save_decoded_map(self, ckpt_path, loader):
-		self.load_ckpt(ckpt_path)
-		self.model.eval()
+		self.model_encode.eval()
 		model_name = ckpt_path.split(CKPT_PATH)[-1][:-5]
 		result_dir = util_os.gen_dir("{}{}_on_{}".format(RESULT_PATH, model_name, loader.name), True)
 		print ("decoded maps are save at " + result_dir)
@@ -198,14 +197,14 @@ class Model():
 			encode = batch_data[3].to(device)
 			if encode.size(0) != loader.batch_size: return
 
-			pred_image = self.model(encode)
+			pred_image, _ = self.model_encode(encode)
 			np_pred_image = pred_image.data.cpu().numpy() * 255.0
 			np_pred_image[np_pred_image > 255] = 255
 			np_pred_image[np_pred_image < 0] = 0
 			np_pred_image = np_pred_image.transpose(0, 2, 3, 1)
 			for batch_id in range(loader.batch_size):
-				image = Image.open("{}{}".format(DATA_PATH, image_paths[batch_id]))
-				encode = Image.open("{}{}".format(DATA_PATH, encode_paths[batch_id]))
+				image = Image.open("{}{}".format(DATA_PATH, image_paths[batch_id])).resize((INPUT_SIZE, INPUT_SIZE), Image.ANTIALIAS)
+				encode = Image.open("{}{}".format(DATA_PATH, encode_paths[batch_id])).resize((INPUT_SIZE, INPUT_SIZE), Image.ANTIALIAS)
 
 				image_name = image_paths[batch_id].split('/')[-1].split('.')[0]
 				pred_path = "{}{}.png".format(result_dir, image_name)
@@ -240,7 +239,7 @@ class Model():
 				false_diff.append(diff)
 		true_diff.sort(reverse=True)
 		false_diff.sort()
-		
+
 		join_diff = true_diff + false_diff
 		np_true_diff = np.array(true_diff)
 		np_false_diff = np.array(false_diff)
@@ -256,9 +255,20 @@ class Model():
 			performances.append((performance, correct_1, correct_0, threshold))
 		performances.sort(reverse=True)
 
-		for performance, correct_1, correct_0, threshold in performances[:10]:
-			print ("threshold = {:.6f} --> performance = {:.2f}%, correct_1 = {:.2f}%, correct_0 = {:.2f}%"
-														.format(threshold, performance, correct_1, correct_0))
+		peak_threshold = round(performances[0][-1], 2)
+		num_bins, bin_size = 25, round(peak_threshold / 100, 3)
+		print ("Impact of distance thresholds to discrimination performance:")
+		print ("{:<12}{:>12}{:>12}{:>12}".format('threshold', '1', '0', 'average'))
+		for step in range(-num_bins, num_bins+1):
+			threshold = peak_threshold + step * bin_size
+			correct_1 = np.sum((np_true_diff <= threshold).astype('uint8')) / len(true_diff) * 100
+			correct_0 = np.sum((np_false_diff > threshold).astype('uint8')) / len(false_diff) * 100
+			performance = (correct_1 + correct_0) / 2
+			marking = '+++++' if step == 0 else ''
+			print ("{:<12.3f}{:>11.2f}%{:>11.2f}%{:>11.2f}% {}"
+									.format(threshold, correct_1, correct_0, performance, marking))
+
+
 
 
 
