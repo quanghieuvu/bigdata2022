@@ -40,8 +40,11 @@ python -W ignore main.py buffalo eval_discrimination 0 0 S2
 python -W ignore main.py buffalo eval_discrimination 0 10 S2
 python -W ignore main.py buffalo eval_discrimination 0 11 S2
 ```
-
-
+Generate results on test set:
+```bash
+python -W ignore main.py buffalo generate_test_result "arch_id" "model_id" "task_name"
+python -W ignore main.py buffalo generate_test_result 0 11 S2
+```
 
 ## Related work
 1. Arnold's cat map ([url](https://en.wikipedia.org/wiki/Arnold's_cat_map))

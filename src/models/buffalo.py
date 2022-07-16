@@ -268,6 +268,43 @@ class Model():
 			print ("{:<12.3f}{:>11.2f}%{:>11.2f}%{:>11.2f}% {}"
 									.format(threshold, correct_1, correct_0, performance, marking))
 
+	def generate_test_result(self, task_name, test_path, discrimination_distance_threshold=1.0):
+		self.model_image.eval()
+		self.model_encode.eval()
+
+		output_file = open("{}{}.csv".format(RESULT_PATH, task_name), 'w')
+		output_file.write("id,input_path,encoded_path,discrimination\n")
+		balancing_file = open("{}{}_balance.csv".format(RESULT_PATH, task_name), 'w')
+		balancing_file.write("id,input_path,encoded_path,discrimination\n")
+
+		balancing_samples, diffs = [], []
+		positive = 0
+
+		test_samples = list(open(test_path, 'r'))[1:]
+		for sample in tqdm(test_samples):
+			[_, image_path, encode_path] = sample.strip().split(',')
+			image = util.preprocessing_image("{}{}".format(DATA_PATH, image_path), INPUT_SIZE).to(device)
+			encode = util.preprocessing_image("{}{}".format(DATA_PATH, encode_path)).to(device)
+			pred_image, feature_image = self.model_image(image)
+			pred_encode, feature_encode = self.model_encode(encode)
+			diff = self.criterion(feature_image, feature_encode).item()
+			discrimination = int(diff < discrimination_distance_threshold)
+			output_file.write("{},{}\n".format(sample.strip(), discrimination))
+			positive += discrimination
+
+			balancing_samples.append((sample, diff))
+			diffs.append(diff)
+		output_file.close()
+		print ("positive percentage = {:.2f}%".format(100 * positive / len(test_samples)))
+
+		diffs.sort()
+		diff_median = diffs[(len(diffs) - 1) // 2]
+		for sample, diff in balancing_samples:
+			discrimination = int(diff <= diff_median)
+			balancing_file.write("{},{}\n".format(sample.strip(), discrimination))
+		balancing_file.close()
+
+
 
 
 

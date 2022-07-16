@@ -57,3 +57,17 @@ def save_decoded_map(arch_id, model_id, task_name):
 	model = model_.Model(arch.Arch(output_depth), arch.Arch(output_depth))
 	model.load_ckpt(ckpt_path)
 	model.save_decoded_map(ckpt_path, val_loader)
+
+def generate_test_result(arch_id, model_id, task_name):
+	discrimination_distance_threshold = 1.35
+	model_id = int(model_id)
+	output_depth = 3 if model_id < 10 else 1 #RGB or grayscale
+	arch = arch_list[int(arch_id)]
+
+	# test_path = '{}{}_pseudo_test.csv'.format(TRAIN_VAL_PATH, task_name)
+	test_path = '{}BigDataCup2022/{}/test/test.csv'.format(DATA_PATH, task_name)
+	ckpt_path = CKPT_PATH + "BUFFALO_v{}_{}_train_{}.ckpt".format(arch_id, task_name, model_id)
+	print ('ckpt_path:', ckpt_path)
+	model = model_.Model(arch.Arch(output_depth), arch.Arch(output_depth))
+	model.load_ckpt(ckpt_path)
+	model.generate_test_result(task_name, test_path, discrimination_distance_threshold)

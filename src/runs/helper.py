@@ -57,4 +57,16 @@ def generate_discrimination_val(arch_id, model_id, task_name):
 		val_file.write("{},{},{}\n".format(0, image_paths[random_id], encode_paths[sample_id]))
 	val_file.close()
 
+def generate_pseudo_test(arch_id, model_id, task_name):
+	val_path = '{}{}_val.txt'.format(TRAIN_VAL_PATH, task_name)
+	pseudo_test_file = open('{}{}_pseudo_test.csv'.format(TRAIN_VAL_PATH, task_name), 'w')
+	pseudo_test_file.write("id,input_path,encoded_path\n")
+
+	val_samples = list(open(val_path, 'r'))
+	for id, val_sample in enumerate(val_samples):
+		pseudo_test_file.write("{},{}".format(id, val_sample))
+	pseudo_test_file.close()
+
+
+
 
