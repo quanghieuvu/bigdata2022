@@ -1,8 +1,10 @@
 import os
 import glob
 import time
-#import fastext
+import fasttext
+
 import numpy as np
+import pandas as pd
 
 from collections import Counter
 
@@ -37,7 +39,36 @@ def convert_bin_to_text(folder, file_limit = -1):
 train an nlp model from an input text file
 '''
 def train_nlp_model():
-    pass
+    model = fasttext.train_unsupervised(os.path.join("input", "S3", "train", "text.txt"), dim=128)
+    model.save_model(os.path.join("input", "S3", "train", "fasttext.model"))
+
+def generate_embeddings(folder, file_limit = -1):
+    model = fasttext.load_model(os.path.join("input", "S3", "train", "fasttext.model"))
+    input_folder = os.path.join("input", "S3", folder, "enc")
+    embedding_vectors = []
+
+    file_cnt = 1
+    for filename_full in glob.glob(os.path.join(input_folder, "*")):
+        filename = filename_full.split(os.path.sep)[-1].split(".")[0]
+        print(f"{file_cnt}: processing {filename}")
+        texts = []
+        with open(filename_full, "rb") as fin:
+            byte = fin.read(1)
+            while byte:
+                if byte == '':
+                    break
+                texts.append(byte.hex())
+                byte = fin.read(1)
+
+        embedding_vectors.append(model.get_sentence_vector(" ".join(texts)))
+        if file_cnt == file_limit:
+            break
+        file_cnt += 1
+
+    columns = [f"v_{i}" for i in range(128)]
+    df = pd.DataFrame(data=embedding_vectors, columns=columns)
+    print(df.head())
+    df.to_csv(os.path.join("input", "S3", "train", "vectors.csv"), index=False)
 
 '''
 analyze the structure of enc binary files of S3
@@ -78,4 +109,6 @@ if __name__ == "__main__":
     #print(f"Elapsed time: {time.time() - start}")
     #analyze_enc_files_np(task='S3')
     #print(f"Elapsed time: {time.time() - start}")
-    convert_bin_to_text(folder="train", file_limit=3)
+    convert_bin_to_text(folder="train", file_limit=5)
+    train_nlp_model()
+    generate_embeddings(folder="train", file_limit=5)
