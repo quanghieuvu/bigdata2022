@@ -1,25 +1,81 @@
 import os
 import glob
+import time
+#import fastext
+import numpy as np
 
 from collections import Counter
+
+'''
+convert all .bin files into a single text file for fasttext training
+'''
+def convert_bin_to_text(folder, file_limit = -1):
+    input_folder = os.path.join("input", "S3", folder, "enc")
+    fout = open(os.path.join("input", "S3", folder, "text.txt"), "w")
+
+    file_cnt = 1
+    for filename_full in glob.glob(os.path.join(input_folder, "*")):
+        filename = filename_full.split(os.path.sep)[-1].split(".")[0]
+        print(f"{file_cnt}: processing {filename}")
+        texts = []
+        with open(filename_full, "rb") as fin:
+            byte = fin.read(1)
+            while byte:
+                if byte == '':
+                    break
+                texts.append(byte.hex())
+                byte = fin.read(1)
+
+        fout.write(" ".join(texts) + "\n")
+        if file_cnt == file_limit:
+            break
+        file_cnt += 1
+
+    fout.close()
+
+'''
+train an nlp model from an input text file
+'''
+def train_nlp_model():
+    pass
 
 '''
 analyze the structure of enc binary files of S3
 ending file with b''
 equal distribution of byte values from 0 to 255
 '''
-def analyze_s3_enc_files():
-    for filename in glob.glob(os.path.join("input", "S3", "train", "enc", "*")):
+def analyze_enc_files(task='S3'):
+    for filename in glob.glob(os.path.join("input", task, "train", "enc", "*")):
         print(filename)
         bytes = []
         with open(filename, "rb") as f:
             byte = f.read(1)
             while byte:
+                if byte == '':
+                    break
+                bytes.append(byte.hex())
                 byte = f.read(1)
-                if byte != b'':
-                    bytes.append(byte)
+
+        print(bytes[:16], bytes[-16:], len(bytes))
         c = Counter(bytes)
-        print(len(bytes), len(c), c)
+        print(len(c), c)
+        break
+
+'''
+only for double check
+'''
+def analyze_enc_files_np(task='S3'):
+    for filename in glob.glob(os.path.join("input", task, "train", "enc", "*")):
+        print(filename)
+        with open(filename, "rb") as f:
+            numpy_data = np.fromfile(f, np.dtype('B'))
+            print(numpy_data[:16], numpy_data[-16:], numpy_data.shape)
+        break
 
 if __name__ == "__main__":
-    analyze_s3_enc_files()
+    start = time.time()
+    #analyze_enc_files(task='S3')
+    #print(f"Elapsed time: {time.time() - start}")
+    #analyze_enc_files_np(task='S3')
+    #print(f"Elapsed time: {time.time() - start}")
+    convert_bin_to_text(folder="train", file_limit=3)
