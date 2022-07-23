@@ -6,9 +6,12 @@ import pandas as pd
 mode 0: all preds are 0
 mode 1: all preds are 1
 mode 2: random predictions
-mode 3: load predictions (random values) from the previous submitted mode 2
+mode 3: load predictions (random values) from the previously submitted mode 2
+- if S1_file != '': replace random values from S1 with results from ML
+- if S2_file != '': replace random values from S2 with results from ML
+- if S3_file != '': replace random values from S3 with results from ML
 '''
-def generate_random_predictions(mode, S2_file='', verbose=0):
+def generate_random_predictions(mode, S1_file = '', S2_file='', S3_file ='', verbose=0):
     df_submission = pd.read_csv(os.path.join("input", "submission_template.csv"))
     output_file = os.path.join("output", f"submission_mode_{mode}.txt")
     if mode in [0, 1]:
@@ -17,40 +20,68 @@ def generate_random_predictions(mode, S2_file='', verbose=0):
         random_values = [random.randint(0, 1) for i in range(len(df_submission))]
         df_submission["is_pair"] = random_values
         print(df_submission["is_pair"].value_counts())
-    else:
+    else: # mode == 3
         df_m2 = pd.read_csv(os.path.join("output", "submission_mode_2.txt"), header=None)
         df_m2.columns = ["is_pair"]
         random_values = df_m2["is_pair"].values.tolist()
         df_submission["is_pair"] = random_values
+        print(f"Target distribution from input file")
         print(df_submission["is_pair"].value_counts())
+
+    output_file = os.path.join("output", f"submission_mode_{mode}")
+    if S1_file != '':
+        df_s1 = pd.read_csv(os.path.join("output", S1_file))
+        df_submission = df_submission.merge(df_s1, on="id", how="left")
+        df_submission["discrimination"].fillna(-1, inplace=True)
+        df_submission = df_submission.astype({"discrimination": int})
+        df_submission["is_pair"] = df_submission.apply(
+            lambda x: x["discrimination"] if x["discrimination"] != -1 else x["is_pair"], axis=1)
+        df_submission.drop("discrimination", axis=1, inplace=True)
+        output_file += f"_{S1_file}"
 
     if S2_file != '':
         df_s2 = pd.read_csv(os.path.join("output", S2_file))
         df_submission = df_submission.merge(df_s2, on="id", how="left")
         df_submission["discrimination"].fillna(-1, inplace=True)
         df_submission = df_submission.astype({"discrimination": int})
-        df_submission["is_pair"] = df_submission.apply(lambda x: x["discrimination"] if x["discrimination"]!=-1 else x["is_pair"], axis=1)
-        output_file = os.path.join("output", f"submission_mode_{mode}_{S2_file}.txt")
+        df_submission["is_pair"] = df_submission.apply(
+            lambda x: x["discrimination"] if x["discrimination"]!=-1 else x["is_pair"], axis=1)
+        df_submission.drop("discrimination", axis=1, inplace=True)
+        output_file += f"_{S2_file}"
 
-        if verbose == 1:
-            print(df_submission[9991:10010][["is_pair", "discrimination"]])
-
+    print(f"Final target distribution, output file {output_file}")
     print(df_submission["is_pair"].value_counts())
-    df_submission[["is_pair"]].to_csv(output_file, index=False, header=False)
+    df_submission[["is_pair"]].to_csv(f"{output_file}.txt", index=False, header=False)
 
 # infer score
-def infer_score():
-    s1 = (0.6248 - 0.5096) / 0.3 + 0.5096
-    s2 = (0.6257 - 0.5096) / 0.3 + 0.5096
-    print(s1, s2)
+def infer_score(mode=1):
+    if mode == 1:
+        s1 = (0.5502 - 0.5096) / 0.1 + 0.5096
+        s2 = (0.5493 - 0.5096) / 0.1 + 0.5096
+        print(s1, s2)
+
+    if mode == 2:
+        s1 = (0.6248 - 0.5096) / 0.3 + 0.5096
+        s2 = (0.6257 - 0.5096) / 0.3 + 0.5096
+        s3 = (0.6359 - 0.5096) / 0.3 + 0.5096
+        s4 = (0.6362 - 0.5096) / 0.3 + 0.5096
+        print(s1, s2, s3, s4)
+
+def estimate_score(acc_s1, acc_s2, acc_s3):
+    print(0.1 * acc_s1 + 0.3 * acc_s2 + 0.6 * acc_s3)
 
 if __name__ == "__main__":
     '''
     for mode in [0, 1, 2]:
         generate_random_predictions(mode)
     '''
-    '''
-    for S2_file in ["S2.csv", "S2_balance.csv"]:
-        generate_random_predictions(mode=3, S2_file=S2_file, verbose=0)
-    '''
-    infer_score()
+    #for S1_file in ["S1.csv", "S1_balance.csv"]:
+    #    generate_random_predictions(mode=3, S1_file=S1_file, verbose=0)
+
+    #for S2_file in ["S2_0722.csv", "S2_balance_0722.csv"]:
+    #    generate_random_predictions(mode=3, S2_file=S2_file, verbose=0)
+
+    infer_score(mode=1)
+    infer_score(mode=2)
+
+    estimate_score(acc_s1=0.9155, acc_s2=0.9315, acc_s3= 0.5096)
