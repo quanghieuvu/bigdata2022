@@ -52,6 +52,7 @@ def generate_embeddings(file_limit = -1):
     for folder in ["train", "test"]:
         input_folder = os.path.join("input", "S3", folder, "enc")
         embedding_vectors = []
+        files = []
 
         file_cnt = 1
         for filename_full in glob.glob(os.path.join(input_folder, "*")):
@@ -66,15 +67,17 @@ def generate_embeddings(file_limit = -1):
                     texts.append(byte.hex())
                     byte = fin.read(1)
 
+            files.append(filename)
             embedding_vectors.append(model.get_sentence_vector(" ".join(texts)))
             if file_cnt == file_limit:
                 break
             file_cnt += 1
 
-        columns = [f"v_{i}" for i in range(128)]
+        columns = [f"v_{i+1}" for i in range(128)]
         df = pd.DataFrame(data=embedding_vectors, columns=columns)
+        df["file"] = files
         print(df.head())
-        df.to_csv(os.path.join("input", "S3", folder, "vectors.csv"), index=False)
+        df.to_csv(os.path.join("input", "S3", folder, f"{folder}_vectors.csv"), index=False)
 
         if file_cnt == file_limit:
             break
@@ -119,6 +122,6 @@ if __name__ == "__main__":
     #analyze_enc_files_np(task='S3')
     #print(f"Elapsed time: {time.time() - start}")
     running_files = -1
-    convert_bin_to_text(file_limit=running_files)
-    train_nlp_model()
+    #convert_bin_to_text(file_limit=running_files)
+    #train_nlp_model()
     generate_embeddings(file_limit=running_files)
