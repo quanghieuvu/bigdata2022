@@ -1,12 +1,13 @@
 import os
 import glob
 import time
-import fasttext
+#import fasttext
 
 import numpy as np
 import pandas as pd
 
 from collections import Counter
+from nlp_word2vec import word2vec
 
 '''
 convert all .bin files into a single text file for fasttext training
@@ -42,12 +43,51 @@ def convert_bin_to_text(file_limit = -1):
 
 '''
 train an nlp model from an input text file
+- mode=0: using fasttext
+- mode=1: using word2vec class 
 '''
-def train_nlp_model():
-    model = fasttext.train_unsupervised(os.path.join("input", "S3", "text.txt"), dim=128)
-    model.save_model(os.path.join("input", "S3", "fasttext.model"))
+def train_nlp_model(mode):
+    if mode == 0:
+        model = fasttext.train_unsupervised(os.path.join("input", "S3", "text.txt"), dim=128)
+        model.save_model(os.path.join("input", "S3", "fasttext.model"))
+    elif mode == 1:
+        settings = {
+            'n': 5,  # dimension of word embeddings
+            'window_size': 2,  # context window +/- center word
+            'min_count': 0,  # minimum word count
+            'epochs': 5000,  # number of training epochs
+            'neg_samp': 10,  # number of negative words to use during training
+            'learning_rate': 0.01  # learning rate
+        }
+        np.random.seed(0)
 
-def generate_embeddings(file_limit = -1):
+        corpus = []
+        fin = open(os.path.join("input", "S3", "text.txt"), "r")
+        while True:
+            line = fin.readline().strip()
+            if line == '':
+                break
+            corpus.append(line.split())
+        fin.close()
+        print(f"Done data loading")
+
+        # INITIALIZE W2V MODEL
+        w2v = word2vec(settings)
+
+        # generate training data
+        start = time.time()
+        training_data = w2v.generate_training_data(corpus)
+        print(f"Done data preparation in {time.time() - start}")
+
+        # train word2vec model
+        start = time.time()
+        w2v.train(training_data)
+        print(f"Done training in {time.time() - start}")
+
+        print(w2v.word_index)
+        print(w2v.w1)
+
+def generate_embeddings(mode = 0, file_limit = -1):
     model = fasttext.load_model(os.path.join("input", "S3", "fasttext.model"))
     for folder in ["train", "test"]:
         input_folder = os.path.join("input", "S3", folder, "enc")
@@ -121,7 +161,7 @@ if __name__ == "__main__":
     #print(f"Elapsed time: {time.time() - start}")
     #analyze_enc_files_np(task='S3')
     #print(f"Elapsed time: {time.time() - start}")
-    running_files = -1
-    #convert_bin_to_text(file_limit=running_files)
-    #train_nlp_model()
-    generate_embeddings(file_limit=running_files)
+    running_files = 2 #-1
+    convert_bin_to_text(file_limit=running_files)
+    train_nlp_model(mode=1)
+    #generate_embeddings(mode=1, file_limit=running_files)
