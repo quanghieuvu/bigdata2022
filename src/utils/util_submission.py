@@ -81,12 +81,16 @@ def analyze_S3():
 def enhance_S3(file):
     df_submission = pd.read_csv(os.path.join("output", file), header=None)
     df_submission.columns = ["is_pair"]
-    print("Before", df_submission["is_pair"].value_counts())
+    print("Before", df_submission["is_pair"].value_counts(),
+          df_submission[20000:]["is_pair"].value_counts())
 
     new_values = df_submission["is_pair"].values.tolist()[:20000] + [random.randint(0, 1) for i in range(10000)]
     df_submission["is_pair"] = new_values
-    print("After", df_submission["is_pair"].value_counts())
-    df_submission[["is_pair"]].to_csv(os.path.join("output", f"{file}_adjusted_s3"), index=False, header=False)
+
+    value_counts = df_submission["is_pair"].value_counts().tolist()
+    print("After", df_submission["is_pair"].value_counts(),
+          df_submission[20000:]["is_pair"].value_counts())
+    df_submission[["is_pair"]].to_csv(os.path.join("output", f"{file}_adjusted_s3_{value_counts[0]}"), index=False, header=False)
 
 # infer accuracy and estimate score
 def infer_score(s1_score=0.5, s1_percentage=0.1,
@@ -123,6 +127,11 @@ def ensemble(files, is_submission=True):
         df_ensemble["discrimination"] = df_ensemble.apply(
             lambda x: 1 if np.average([x[f"v_{i}"] for i in range(len(files))]) >= 0.5 else 0, axis=1)
         df_ensemble.to_csv(os.path.join("output", "ensemble", "ensemble.csv"), index=False)
+
+def get_value_counts(file):
+    df_submission = pd.read_csv(os.path.join("output", file), header=None)
+    df_submission.columns = ["is_pair"]
+    print("Stats", df_submission["is_pair"].value_counts())
 
 if __name__ == "__main__":
     running_params = {
@@ -180,3 +189,6 @@ if __name__ == "__main__":
 
     if running_params["ensemble"]:
         ensemble(running_params["ensemble_files"], is_submission=False)
+
+    #get_value_counts(file="submission_mode_3_S1_balance_fold_by_ranking.csv_ensemble.csv.txt_adjusted_s3_15012")
+    #get_value_counts(file="submission_mode_3_S1_balance_fold_by_ranking.csv_ensemble.csv.txt_adjusted_s3_15007")
