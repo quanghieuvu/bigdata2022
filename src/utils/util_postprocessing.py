@@ -14,12 +14,13 @@ def post_processing(base_file):
         values = df_submission["is_pair"].values.tolist()[20000:]
         for value, index in zip(values, range(10000)):
             if value == 1:
-                scores[index] += score
+                scores[index] += score / 10000
             else:
-                scores[index] += (1 - score)
+                scores[index] += (1 - score / 1000)
 
     # sort the score of 10000 samples
-    sorted_scores, sorted_indices = zip(*sorted(zip(scores, range(10000))))
+    sorted_scores, sorted_indices = zip(*sorted(zip(scores, range(10000)), reverse=True))
+    print(sorted_scores)
     s3_predictions = [0] * 10000
     for index in sorted_indices[:5000]:
         s3_predictions[index] = 1
