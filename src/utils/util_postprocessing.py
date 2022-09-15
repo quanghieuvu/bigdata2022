@@ -16,7 +16,7 @@ def post_processing(base_file):
             if value == 1:
                 scores[index] += score / 10000
             else:
-                scores[index] += (1 - score / 1000)
+                scores[index] += (1 - score / 10000)
 
     # sort the score of 10000 samples
     sorted_scores, sorted_indices = zip(*sorted(zip(scores, range(10000)), reverse=True))
