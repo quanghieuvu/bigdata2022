@@ -9,18 +9,7 @@ def read_s3_output(file_name):
 	s3_list = [int(x.strip()) for x in s3_list]
 	return s3_list
 
-def ensemble_with_s12():
-	file = list(open('output/' + 'submission_mode_3_S1_balance_fold_by_ranking.csv_ensemble.csv.txt', 'r'))
-	s12 = file[:(2*N)]
-
-	s3 = list(open('output/' + 's3.txt', 'r'))
-	s123 = s12 + s3
-	output_file = open('output/s123_{}.txt'.format(int(time.time())), 'w')
-	for sample in s123:
-		output_file.write(sample)
-	output_file.close()
-
-def read_s3_outputs():
+def compute_s3_prob_scores():
 	is_pair_probability = [[] for _ in range(N)]
 	s3_lists, total_scores = [], []
 
@@ -29,7 +18,6 @@ def read_s3_outputs():
 		if 'csv_ensemble' in line:
 			line = line.strip().replace('\t', ' ')
 			[_, file_name, _, _, score] = line.split(' ')
-			# print ('file_name', file_name)
 			total_scores.append(float(score))
 			s3_lists.append(read_s3_output(file_name))
 
@@ -66,11 +54,21 @@ def read_s3_outputs():
 	for sample_id in range(N):
 		s3_score_file.write('{:.8f}\n'.format(s3_prob_scores[sample_id]))
 
-	ensemble_with_s12()
+	
+def ensemble_with_s12():
+	file = list(open('output/' + 'submission_mode_3_S1_balance_fold_by_ranking.csv_ensemble.csv.txt', 'r'))
+	s12 = file[:(2*N)]
 
+	s3 = list(open('output/' + 's3.txt', 'r'))
+	s123 = s12 + s3
+	output_file = open('output/s123_{}.txt'.format(int(time.time())), 'w')
+	for sample in s123:
+		output_file.write(sample)
+	output_file.close()
 		
 		
 
 
 if __name__ == "__main__":
-	read_s3_outputs()
+	compute_s3_prob_scores()
+	ensemble_with_s12()
