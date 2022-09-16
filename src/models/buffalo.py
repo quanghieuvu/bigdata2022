@@ -13,7 +13,7 @@ class Model():
 
 		self.opt_model_path = None
 		self.last_model_path = None
-		self.num_epoch = 512
+		self.num_epoch = 256
 		self.max_lr = 2e-4
 		self.base_lr = 1e-6
 		self.lr_step = 32
@@ -26,7 +26,7 @@ class Model():
 
 		self.loss = None
 		self.image_decryption_loss = None
-		self.encode_decryption_loss = None
+		self.encode_decryption_loss = 0
 
 		self.epoch_loss_ = 0  #for each of train or val loss
 		self.epoch_loss = 0   #sum of train and val loss
@@ -73,7 +73,7 @@ class Model():
 			
 		self.refresh_eval_and_loss()
 
-		for _, batch in enumerate(loader.loader):
+		for _, batch in tqdm(enumerate(loader.loader)):
 			self.run_batch(loader, batch)
 		
 		self.epoch_loss_ /= loader.length
@@ -93,9 +93,14 @@ class Model():
 
 		pred_image, feature_image = self.model_image(image)
 		pred_encode, feature_encode = self.model_encode(encode)
+		# print ('feature_image', feature_image.size())
+		# print ('feature_encode', feature_encode.size())
 
 		self.image_decryption_loss = self.criterion(pred_image, label)
-		self.encode_decryption_loss = self.criterion(pred_encode, label)
+		if pred_encode is not None:
+			self.encode_decryption_loss = self.criterion(pred_encode, label)
+		if self.model_id > 11:
+			self.encode_decryption_loss *= 10.
 		
 		assert(loader.batch_size % 2 == 0)
 		feature_image_flip = torch.flip(feature_image, [0])
@@ -117,7 +122,8 @@ class Model():
 
 		self.epoch_loss_ += self.loss.item() #* loader.batch_size
 		self.epoch_loss_image += self.image_decryption_loss.item()
-		self.epoch_loss_encode += self.encode_decryption_loss.item()
+		if pred_encode is not None:
+			self.epoch_loss_encode += self.encode_decryption_loss.item()
 		self.epoch_loss_similarity += loss_similarity.item()
 		self.epoch_loss_difference += loss_difference.item() 
 
@@ -218,7 +224,7 @@ class Model():
 				vis_image = util_image.stack_in_row([image, encode, pil_pred_image])
 				vis_image.save(pred_path)
 
-	def eval_discrimination(self, val_file):
+	def eval_discrimination(self, val_file, task_name='S2'):
 		self.model_image.eval()
 		self.model_encode.eval()
 
@@ -227,12 +233,19 @@ class Model():
 		for val_sample in tqdm(val_samples):
 			[similarity, image_path, encode_path] = val_sample.strip().split(',')
 			similarity = int(similarity)
-			image = util.preprocessing_image("{}{}".format(DATA_PATH, image_path), INPUT_SIZE).to(device)
-			encode = util.preprocessing_image("{}{}".format(DATA_PATH, encode_path)).to(device)
+			if task_name in ['S1', 'S2']:
+				image = util.preprocessing_image("{}{}".format(DATA_PATH, image_path), INPUT_SIZE).to(device)
+				encode = util.preprocessing_image("{}{}".format(DATA_PATH, encode_path)).to(device)
+			elif task_name in ['S3']:
+				image = util.preprocessing_image("{}{}".format(DATA_PATH, image_path), SMALL_SIZE).to(device)
+				encode = util.preprocessing_binary_encode("{}{}".format(DATA_PATH, encode_path)).to(device)
 
 			pred_image, feature_image = self.model_image(image)
 			pred_encode, feature_encode = self.model_encode(encode)
+			# print ('feature_image', feature_image[:10])
+			# print ('feature_encode', feature_encode[:10])
 			diff = self.criterion(feature_image, feature_encode).item()
+			# print (util_os.get_file_name(image_path), util_os.get_file_name(encode_path), similarity, diff)
 			if similarity == 1: 
 				true_diff.append(diff)
 			else:
@@ -268,14 +281,20 @@ class Model():
 			print ("{:<12.3f}{:>11.2f}%{:>11.2f}%{:>11.2f}% {}"
 									.format(threshold, correct_1, correct_0, performance, marking))
 
-	def generate_test_result(self, task_name, test_path, discrimination_distance_threshold=1.0):
+
+	def generate_test_result(self, task_name, test_path, discrimination_distance_threshold=1.0, fold_id=0):
 		self.model_image.eval()
 		self.model_encode.eval()
+		EXTRA_PATH = util_os.gen_dir(RESULT_PATH + 'extra/')
 
-		output_file = open("{}{}.csv".format(RESULT_PATH, task_name), 'w')
+		output_file = open("{}{}_fold_{}.csv".format(EXTRA_PATH, task_name, fold_id), 'w')
 		output_file.write("id,input_path,encoded_path,discrimination\n")
-		balancing_file = open("{}{}_balance.csv".format(RESULT_PATH, task_name), 'w')
+		balancing_file = open("{}{}_balance_fold_{}.csv".format(EXTRA_PATH, task_name, fold_id), 'w')
 		balancing_file.write("id,input_path,encoded_path,discrimination\n")
+		ranking_file = open("{}{}_ranking_fold_{}.csv".format(EXTRA_PATH, task_name, fold_id), 'w')
+		ranking_file.write("id,input_path,encoded_path,ranking\n")
+		diff_file = open("{}{}_distance_fold_{}.csv".format(EXTRA_PATH, task_name, fold_id), 'w')
+		diff_file.write("id,input_path,encoded_path,distance\n")
 
 		balancing_samples, diffs = [], []
 		positive = 0
@@ -293,16 +312,26 @@ class Model():
 			positive += discrimination
 
 			balancing_samples.append((sample, diff))
-			diffs.append(diff)
+			diffs.append((diff, sample))
 		output_file.close()
 		print ("positive percentage = {:.2f}%".format(100 * positive / len(test_samples)))
 
 		diffs.sort()
-		diff_median = diffs[(len(diffs) - 1) // 2]
+		diff_median = diffs[(len(diffs) - 1) // 2][0]
+		ranking_dict, diff_dict = {}, {}
+		for rank_, (diff, sample) in enumerate(diffs):
+			ranking_dict[sample] = rank_ + 1
+			diff_dict[sample] = diff
+
 		for sample, diff in balancing_samples:
 			discrimination = int(diff <= diff_median)
 			balancing_file.write("{},{}\n".format(sample.strip(), discrimination))
+			ranking_file.write("{},{}\n".format(sample.strip(), ranking_dict[sample]))
+			diff_file.write("{},{:.6f}\n".format(sample.strip(), diff_dict[sample]))
 		balancing_file.close()
+		ranking_file.close()
+		diff_file.close()
+
 
 
 

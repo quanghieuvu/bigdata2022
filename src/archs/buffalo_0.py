@@ -61,7 +61,7 @@ def deconv_fpn_layer(depth_in=256, depth_out=128, num_layers=1):
 
 #FPN-style encoder-deconder network
 class Arch(nn.Module):
-    def __init__(self, output_depth=3):
+    def __init__(self, output_depth=3, skip_connection=True):
         super(Arch, self).__init__()
         self.name = 'BUFFALO_v0'
         #resnet hyper params
@@ -72,6 +72,7 @@ class Arch(nn.Module):
         MIDDLE_DEPTH = 128
         DECONV_DEPTH = 32
         self.output_depth = output_depth
+        self.skip_connection = skip_connection
 
         resnet_model = torchvision.models.resnet50(pretrained=True)
 
@@ -121,15 +122,24 @@ class Arch(nn.Module):
         #deconvolution layers
         deconv_out5 = self.deconv_5(feature_map5)        
         fused4 = torch.cat([deconv_out5, mid_out4], 1)
-        feature_map4 = self.concat_4(fused4)
+        if self.skip_connection: 
+            feature_map4 = self.concat_4(fused4)
+        else:
+            feature_map4 = deconv_out5
 
         deconv_out4 = self.deconv_4(feature_map4)        
         fused3 = torch.cat([deconv_out4, mid_out3], 1)
-        feature_map3 = self.concat_3(fused3)
+        if self.skip_connection:
+            feature_map3 = self.concat_3(fused3)
+        else:
+            feature_map3 = deconv_out4
 
         deconv_out3 = self.deconv_3(feature_map3)        
-        fused2 = torch.cat([deconv_out3, mid_out2], 1)
-        feature_map2 = self.concat_2(fused2)
+        fused2 = torch.cat([deconv_out3, mid_out2], 1)        
+        if self.skip_connection:
+            feature_map2 = self.concat_2(fused2)
+        else:
+            feature_map2 = deconv_out3
 
         #FPN
         fpn_map_5 = self.deconv_fpn_5(feature_map5)

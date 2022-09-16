@@ -18,6 +18,12 @@ def explore_architecture(model):
        print(child)
        child_counter += 1
 
+def freeze_model(model):
+    for child in model.children():
+        for param in child.parameters():
+            param.requires_grad = False
+    return model
+
 def freeze_children(model, children_list):
     child_counter = 0
     for child in model.children():

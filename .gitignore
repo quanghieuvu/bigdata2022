@@ -143,3 +143,6 @@ input/*
 src/log/*
 src/note.txt
 *~*.pptx
+condor/*
+output/*
+ckpt/*
