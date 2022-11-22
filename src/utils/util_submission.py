@@ -95,7 +95,6 @@ def enhance_S3(file):
     file_id = int(time.time())
     df_submission[["is_pair"]].to_csv(os.path.join("output", f"{file}_adjusted_s3_{value_counts[0]}_{file_id}"), index=False, header=False)
 
-
 # infer accuracy and estimate score
 def infer_score(s1_score=0.5, s1_percentage=0.1,
                 s2_score=0.1, s2_percentage=1.0, base_score=0.5096):
