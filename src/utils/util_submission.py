@@ -2,6 +2,7 @@ import os
 import random
 import numpy as np
 import pandas as pd
+import time
 
 '''
 mode 0: all preds are 0
@@ -90,7 +91,9 @@ def enhance_S3(file):
     value_counts = df_submission["is_pair"].value_counts().tolist()
     print("After", df_submission["is_pair"].value_counts(),
           df_submission[20000:]["is_pair"].value_counts())
-    df_submission[["is_pair"]].to_csv(os.path.join("output", f"{file}_adjusted_s3_{value_counts[0]}"), index=False, header=False)
+    
+    file_id = int(time.time())
+    df_submission[["is_pair"]].to_csv(os.path.join("output", f"{file}_adjusted_s3_{value_counts[0]}_{file_id}"), index=False, header=False)
 
 # infer accuracy and estimate score
 def infer_score(s1_score=0.5, s1_percentage=0.1,

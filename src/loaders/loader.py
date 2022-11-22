@@ -6,9 +6,9 @@ class Loader():
 		self.batch_size = batch_size
 		self.name = ann_file.split('.')[0]
 		self.is_training = is_training
-		dataset = FoodDataset(ann_file=ann_file,
+		dataset = Dataset(ann_file=ann_file,
 								transform=transforms.Compose([
-									# Rescale((input_size, input_size)),
+									Rescale((input_size, input_size)),
 									Rotate(is_training),
 									ToNumpy(),
 									AddGaussianNoise(is_training),
